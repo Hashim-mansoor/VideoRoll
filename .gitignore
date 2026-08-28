@@ -1,7 +1,8 @@
 node_modules
-.parcel-cache
+.addfox
 dist
 test
 .VSCoudeCounter
 *.zip
 parcel-bundle-reports
+.parcel-cache

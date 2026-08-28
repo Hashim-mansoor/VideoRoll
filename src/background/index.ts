@@ -3,7 +3,7 @@
  * @Author: Gouxinyu
  * @Date: 2022-04-23 23:37:22
  */
-import { createURL } from 'src/util';
+import { createURL, getWebsiteUrl, getWebsiteLocale } from 'src/util';
 import { ActionType } from '../types/type.d';
 import { sendTabMessage, setBadge, getBrowser } from '../util';
 import { useShortcuts } from 'src/use/useShortcuts';
@@ -33,17 +33,28 @@ function setupStorage() {
 }
 
 
+chrome.runtime.setUninstallURL(
+    getWebsiteUrl(
+        `/${getWebsiteLocale()}/uninstall?version=${chrome.runtime.getManifest()?.version}`
+    )
+);
+
 chrome.runtime.onInstalled.addListener((params: any) => {
     const reason = params.reason;
     switch (reason) {
         case 'install':
-            createURL('https://videoroll.gomi.site');
+            createURL(
+                getWebsiteUrl(
+                    `/${getWebsiteLocale()}/welcome?version=${chrome.runtime.getManifest()?.version}`
+                )
+            );
             break;
         case 'update':
-            createURL('https://videoroll.gomi.site');
-            break;
-        case 'uninstall':
-            createURL('https://videoroll.gomi.site');
+            createURL(
+                `https://docs.videoroll.app/${
+                    chrome.i18n.getUILanguage().includes('zh') ? 'cn' : 'en'
+                }/docs/release-notes`
+            );
             break;
         default:
             break;

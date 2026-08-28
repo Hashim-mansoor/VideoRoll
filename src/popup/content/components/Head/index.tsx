@@ -6,7 +6,7 @@
 
 import { defineComponent, inject } from "vue";
 import { LogoGithub, SettingsSharp, StarHalfSharp, ChatbubbleEllipses } from "@vicons/ionicons5";
-import { createURL } from 'src/util';
+import { createURL, getWebsiteUrl } from 'src/util';
 import browser from 'webextension-polyfill'
 import "./index.less";
 import { IRollConfig } from "src/types/type";
@@ -33,7 +33,7 @@ export default defineComponent({
         }
 
         const toHome = () => {
-            createURL('https://videoroll.gomi.site');
+            createURL(getWebsiteUrl('/'));
         };
 
         const toFeedBack = () => {
@@ -55,7 +55,7 @@ export default defineComponent({
                 <div class="video-roll-logo" onClick={toHome}>
                     <img
                         class="video-roll-logo-text"
-                        src="../../icons/text.png"
+                        src="/icons/text.png"
                     />
                 </div>
                 <div class="video-roll-head-right">

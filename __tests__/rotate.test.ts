@@ -1,145 +1,74 @@
-/*
- * @description:
- * @Author: Gouxinyu
- * @Date: 2022-09-19 22:53:23
- */
-/**
- * @jest-environment jsdom
- */
-
+import { describe, expect, test } from "@rstest/core";
 import VideoRoll from "../src/inject/VideoRoll";
 
-declare interface IExpect extends jest.Expect {
-	toBeWithinRange: Function;
+function expectWithinRange(value: number, floor: number, ceiling: number) {
+  expect(value).toBeGreaterThanOrEqual(floor);
+  expect(value).toBeLessThanOrEqual(ceiling);
 }
 
-declare const expect: IExpect;
+function expectScaleWithinRange(
+  actual: [number, number],
+  xRange: [number, number],
+  yRange: [number, number],
+) {
+  expectWithinRange(actual[0], xRange[0], xRange[1]);
+  expectWithinRange(actual[1], yRange[0], yRange[1]);
+}
 
-expect.extend({
-	toBeWithinRange(received, floor, ceiling) {
-		const pass = received >= floor && received <= ceiling;
-		if (pass) {
-			return {
-				message: () =>
-					`expected ${received} not to be within range ${floor} - ${ceiling}`,
-				pass: true,
-			};
-		} else {
-			return {
-				message: () =>
-					`expected ${received} to be within range ${floor} - ${ceiling}`,
-				pass: false,
-			};
-		}
-	},
-});
-
-/**
- * mock video
- * @param params
- */
 function getMockVideo(params: {
-	videoWidth: number;
-	videoHeight: number;
-	wrapWidth: number;
-	wrapHeight: number;
+  videoWidth: number;
+  videoHeight: number;
+  wrapWidth: number;
+  wrapHeight: number;
 }) {
-	// mock videoElement
-	const { videoWidth, videoHeight, wrapWidth, wrapHeight } = params;
+  const { videoWidth, videoHeight, wrapWidth, wrapHeight } = params;
 
-	const video = {
-		videoWidth,
-		videoHeight,
-		offsetWidth: wrapWidth,
-		offsetHeight: wrapHeight
-	} as HTMLVideoElement;
-
-	return video;
+  return {
+    videoWidth,
+    videoHeight,
+    offsetWidth: wrapWidth,
+    offsetHeight: wrapHeight,
+  } as HTMLVideoElement;
 }
 
 describe("test auto scale", () => {
-	test("horizontal wrap and horizontal video", () => {
-		const video = getMockVideo({
-			videoWidth: 800,
-			videoHeight: 400,
-			wrapWidth: 800,
-			wrapHeight: 400
-		});
+  test("horizontal wrap and horizontal video", () => {
+    const video = getMockVideo({
+      videoWidth: 800,
+      videoHeight: 400,
+      wrapWidth: 800,
+      wrapHeight: 400,
+    });
 
-		expect(VideoRoll.getScaleNumber(video, video, 90)).toEqual([
-			expect.toBeWithinRange(0.5, 0.6),
-			expect.toBeWithinRange(0.5, 0.6)
-		]);
+    expectScaleWithinRange(VideoRoll.getScaleNumber(video, 90), [0.5, 0.6], [0.5, 0.6]);
+    expectScaleWithinRange(VideoRoll.getScaleNumber(video, 180), [1, 1], [1, 1]);
+    expectScaleWithinRange(VideoRoll.getScaleNumber(video, 270), [0.5, 0.6], [0.5, 0.6]);
+    expectScaleWithinRange(VideoRoll.getScaleNumber(video, 0), [1, 1], [1, 1]);
+  });
 
-		expect(VideoRoll.getScaleNumber(video, video, 180)).toEqual([
-			expect.toBeWithinRange(1, 1),
-			expect.toBeWithinRange(1, 1)
-		]);
+  test("horizontal wrap and vertical video", () => {
+    const video1 = getMockVideo({
+      videoWidth: 200,
+      videoHeight: 800,
+      wrapWidth: 800,
+      wrapHeight: 400,
+    });
 
-		expect(VideoRoll.getScaleNumber(video, video, 270)).toEqual([
-			expect.toBeWithinRange(0.5, 0.6),
-			expect.toBeWithinRange(0.5, 0.6)
-		]);
+    expectScaleWithinRange(VideoRoll.getScaleNumber(video1, 90), [2, 2], [2, 2]);
+    expectScaleWithinRange(VideoRoll.getScaleNumber(video1, 180), [1, 1], [1, 1]);
+    expectScaleWithinRange(VideoRoll.getScaleNumber(video1, 270), [2, 2], [2, 2]);
+    expectScaleWithinRange(VideoRoll.getScaleNumber(video1, 0), [1, 1], [1, 1]);
 
-		expect(VideoRoll.getScaleNumber(video, video, 0)).toEqual([
-			expect.toBeWithinRange(1, 1),
-			expect.toBeWithinRange(1, 1)
-		]);
-	});
+    const video2 = getMockVideo({
+      videoWidth: 720,
+      videoHeight: 1280,
+      wrapWidth: 720,
+      wrapHeight: 405,
+    });
 
-	test("horizontal wrap and vertical video", () => {
-		const video1 = getMockVideo({
-			videoWidth: 200,
-			videoHeight: 800,
-			wrapWidth: 800,
-			wrapHeight: 400
-		});
-
-		expect(VideoRoll.getScaleNumber(video1, video1, 90)).toEqual([
-			expect.toBeWithinRange(2, 2),
-			expect.toBeWithinRange(2, 2)
-		]);
-
-		expect(VideoRoll.getScaleNumber(video1, video1, 180)).toEqual([
-			expect.toBeWithinRange(1, 1),
-			expect.toBeWithinRange(1, 1)
-		]);
-
-		expect(VideoRoll.getScaleNumber(video1, video1, 270)).toEqual([
-			expect.toBeWithinRange(2, 2),
-			expect.toBeWithinRange(2, 2)
-		]);
-
-		expect(VideoRoll.getScaleNumber(video1, video1, 0)).toEqual([
-			expect.toBeWithinRange(1, 1),
-			expect.toBeWithinRange(1, 1)
-		]);
-
-		const video2 = getMockVideo({
-			videoWidth: 720,
-			videoHeight: 1280,
-			wrapWidth: 720,
-			wrapHeight: 405
-		});
-
-		expect(VideoRoll.getScaleNumber(video2, video2, 90)).toEqual([
-			expect.toBeWithinRange(1.7, 1.8),
-			expect.toBeWithinRange(1.7, 1.8)
-		]);
-
-		expect(VideoRoll.getScaleNumber(video2, video2, 180)).toEqual([
-			expect.toBeWithinRange(1, 1),
-			expect.toBeWithinRange(1, 1)
-		]);
-
-		expect(VideoRoll.getScaleNumber(video2, video2, 270)).toEqual([
-			expect.toBeWithinRange(1.7, 1.8),
-			expect.toBeWithinRange(1.7, 1.8)
-		]);
-
-		expect(VideoRoll.getScaleNumber(video2, video2, 0)).toEqual([
-			expect.toBeWithinRange(1, 1),
-			expect.toBeWithinRange(1, 1)
-		]);
-	});
+    expectScaleWithinRange(VideoRoll.getScaleNumber(video2, 90), [1.7, 1.8], [1.7, 1.8]);
+    expectScaleWithinRange(VideoRoll.getScaleNumber(video2, 180), [1, 1], [1, 1]);
+    expectScaleWithinRange(VideoRoll.getScaleNumber(video2, 270), [1.7, 1.8], [1.7, 1.8]);
+    expectScaleWithinRange(VideoRoll.getScaleNumber(video2, 0), [1, 1], [1, 1]);
+  });
 });
